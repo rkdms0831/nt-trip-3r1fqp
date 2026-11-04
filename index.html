@@ -86,6 +86,13 @@ nav.tabs a.on .ic{background:var(--mint-soft)}
 .maplink{display:inline-flex;align-items:center;gap:4px;font-size:12px;text-decoration:none;color:var(--sky-deep);margin-top:6px;font-weight:500;
   background:var(--sky-soft);padding:4px 10px 4px 8px;border-radius:999px}
 .maplink svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.links{display:flex;gap:6px;flex-wrap:wrap}
+.dist{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.dist svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.chips.base{align-items:center;gap:6px}
+.chips.base .lbl{font-size:12px;color:var(--muted);flex:0 0 auto;padding-right:2px}
+.chips.base button{padding:6px 12px;font-size:12px}
+.stay .vi{font-size:12px;color:var(--muted);word-break:break-word}
 
 /* ---- 공통 카드 / 버튼 ---- */
 .card,.stay,.place,.check{background:var(--card);border-radius:var(--r-card);box-shadow:var(--shadow);min-width:0}
@@ -178,6 +185,7 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
 
   <section class="view" id="view-places" hidden>
     <div class="chips" id="catchips"></div>
+    <div class="chips base" id="basechips"></div>
     <div id="placelist" style="display:flex;flex-direction:column;gap:12px"></div>
   </section>
 
@@ -199,6 +207,11 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
         <b>11/29(일)</b><span>23:40 깜란 출발 → 11/30(월) 06:20 김해 도착</span>
         <b>공항↔시내</b><span>차로 약 45분. 픽업은 나트랑도깨비 카톡 채널 문의(시내 호텔 투숙 시 무료 후기 있음)</span>
       </div>
+    </div>
+    <div class="card">
+      <h2>숙소 동선</h2>
+      <div class="kv" id="hotelkv"></div>
+      <div class="small">거리는 직선거리에 도로 보정(×1.3)을 한 추정치입니다. 정확한 경로는 길찾기 버튼으로 확인하세요.</div>
     </div>
     <div class="card">
       <h2>환율 계산기</h2>
@@ -292,61 +305,83 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
 const EMBED = {};
 const VAULT = null;//VAULT  (PIN.txt가 있으면 빌드가 바우처를 AES로 암호화해 여기에 넣음)
 
+/* 좌표: OpenStreetMap(Nominatim) 조회값. ~ 표시는 거리·골목 기준 근사치 */
 const PLACES = [
- {id:'moc', cat:'맛집', ko:'목식당', vi:'Mộc Seafood', addr:'74 Hồng Bàng, Tân Lập, Nha Trang', note:'크랩·마늘버터 새우. 10:30~22:30. 구글맵 채팅으로 예약, 2층 요청', when:'11/27 저녁'},
- {id:'anthoi2', cat:'맛집', ko:'안토이 2호점', vi:'Ăn Thôi 2', addr:'64C Nguyễn Thị Minh Khai, Nha Trang', note:'분짜 세트·소곱창 쌀국수. 웨이팅 적은 지점, 예약 불가', when:'11/28 점심'},
- {id:'anthoi1', cat:'맛집', ko:'안토이 1호점', vi:'Ăn Thôi', addr:'3 Ngô Đức Kế, Nha Trang', note:'대기 긺, 16시쯤 가면 바로 입장'},
- {id:'phohp', cat:'맛집', ko:'포한푹', vi:'Phở Hạnh Phúc', addr:'Phở Hạnh Phúc, Nha Trang', note:'뚝배기 쌀국수', when:'11/27 점심'},
- {id:'bmphan', cat:'맛집', ko:'반미판', vi:'Bánh Mì Phan', addr:'Bánh Mì Phan, Nha Trang', note:'소고기 치즈 반미. 실내 에어컨', when:'11/29 저녁'},
- {id:'bmut', cat:'맛집', ko:'반미 엇 트엉', vi:'Bánh mì Út Thương', addr:'Bánh mì Út Thương, Nha Trang', note:'07:00~20:30, 토요일 휴무', when:'11/29 점심'},
- {id:'nem', cat:'맛집', ko:'넴느엉 당반꾸옌', vi:'Nem Nướng Đặng Văn Quyền', addr:'16A Lãn Ông, Nha Trang', note:'숯불 돼지고기 라이스페이퍼 쌈'},
- {id:'bmphuong', cat:'맛집', ko:'반미 퐁', vi:'Bánh Mì Phượng', addr:'Bánh Mì Phượng, Nha Trang', note:'호이안 명가 분점, 해산물 반미'},
- {id:'cong', cat:'카페', ko:'콩카페', vi:'Cộng Cà Phê', addr:'27 Nguyễn Thiện Thuật, Nha Trang', note:'코코넛 스무디 커피'},
- {id:'an', cat:'카페', ko:'안카페', vi:'An Cafe', addr:'40 Lê Đại Hành, Nha Trang', note:'정원 카페'},
- {id:'rain', cat:'카페', ko:'레인포레스트 카페', vi:'Rainforest Cafe', addr:'79B Tô Hiến Thành, Nha Trang', note:'정글 인테리어'},
- {id:'cccp', cat:'카페', ko:'CCCP 커피', vi:'CCCP Coffee', addr:'CCCP Coffee, Nha Trang', note:'코코넛 커피·망고 스무디, 시내 3개 지점'},
- {id:'langfarm', cat:'카페', ko:'랑팜 뷔페', vi:"L'angfarm Buffet", addr:"L'angfarm Buffet, Nha Trang", note:'디저트 뷔페 + 기념품 쇼핑'},
- {id:'runam', cat:'카페', ko:'루남 비스트로', vi:'Runam Bistro', addr:'32-34 Trần Phú, Nha Trang', note:'고급 커피, 쉐라톤 옆'},
- {id:'dam', cat:'쇼핑', ko:'담시장', vi:'Chợ Đầm', addr:'Chợ Đầm, Vạn Thạnh, Nha Trang', note:'현금·흥정, 1.5시간', when:'11/27 오후'},
- {id:'night', cat:'쇼핑', ko:'나트랑 야시장', vi:'Nha Trang Night Market', addr:'46 Trần Phú, Lộc Thọ, Nha Trang', note:'18:00~23:00'},
- {id:'lotte', cat:'쇼핑', ko:'롯데마트', vi:'LOTTE Mart Nha Trang', addr:'58 Đường 23 Tháng 10, Phương Sơn, Nha Trang', note:'커피·캐슈넛·건망고 정찰제'},
- {id:'sailing', cat:'밤', ko:'세일링 클럽', vi:'Sailing Club', addr:'72-74 Trần Phú, Nha Trang', note:'비치클럽, 칵테일·불쇼'},
- {id:'sky', cat:'밤', ko:'스카이라이트 루프탑', vi:'Skylight Nha Trang', addr:'38 Trần Phú, Nha Trang', note:'루프탑 바, 해변 야경'},
- {id:'iresort', cat:'휴양', ko:'아이리조트 머드온천', vi:'I-Resort', addr:'Tổ 19, Thôn Xuân Ngọc, Vĩnh Ngọc, Nha Trang', note:'머드욕 + 온천풀', when:'11/29 오후'},
- {id:'sheraton', cat:'숙소', ko:'쉐라톤 나트랑', vi:'Sheraton Nha Trang Hotel & Spa', addr:'26-28 Trần Phú, Nha Trang', note:'숙소 후보 1'},
- {id:'ic', cat:'숙소', ko:'인터컨티넨탈 나트랑', vi:'InterContinental Nha Trang', addr:'32-34 Trần Phú, Nha Trang', note:'숙소 후보 2'},
- {id:'amiana', cat:'숙소', ko:'아미아나 리조트', vi:'Amiana Resort', addr:'Turtle Bay, Phạm Văn Đồng, Nha Trang', note:'숙소 후보 3, 시내 셔틀'},
- {id:'airport', cat:'숙소', ko:'깜란 국제공항', vi:'Cam Ranh International Airport', addr:'Cam Ranh, Khánh Hòa', note:'11/26 22:40 도착 / 11/29 23:40 출발'},
+ {id:'moc', cat:'맛집', ko:'목식당', vi:'Mộc Seafood', addr:'74 Hồng Bàng, Tân Lập, Nha Trang', note:'크랩·마늘버터 새우. 10:30~22:30. 구글맵 채팅으로 예약, 2층 요청', when:'11/27 저녁', lat:12.2408, lon:109.1894, approx:true},
+ {id:'anthoi2', cat:'맛집', ko:'안토이 2호점', vi:'Ăn Thôi 2', addr:'64C Nguyễn Thị Minh Khai, Nha Trang', note:'분짜 세트·소곱창 쌀국수. 웨이팅 적은 지점, 예약 불가', when:'11/28 점심', lat:12.2380, lon:109.1915},
+ {id:'anthoi1', cat:'맛집', ko:'안토이 1호점', vi:'Ăn Thôi', addr:'3 Ngô Đức Kế, Nha Trang', note:'대기 긺, 16시쯤 가면 바로 입장', lat:12.2398, lon:109.1899},
+ {id:'phohp', cat:'맛집', ko:'포한푹', vi:'Phở Hạnh Phúc', addr:'Lê Quý Đôn, Phước Hòa, Nha Trang', note:'뚝배기 쌀국수', when:'11/27 점심', lat:12.2440, lon:109.1910},
+ {id:'bmphan', cat:'맛집', ko:'반미판', vi:'Bánh Mì Phan', addr:'Bạch Đằng, Phước Hòa, Nha Trang', note:'소고기 치즈 반미. 실내 에어컨', when:'11/29 저녁', lat:12.2398, lon:109.1929},
+ {id:'bmut', cat:'맛집', ko:'반미 엇 트엉', vi:'Bánh mì Út Thương', addr:'30/8 Hùng Vương, Nha Trang', note:'07:00~20:30, 토요일 휴무', when:'11/29 점심', lat:12.2395, lon:109.1946},
+ {id:'nem', cat:'맛집', ko:'넴느엉 당반꾸옌', vi:'Nem Nướng Đặng Văn Quyền', addr:'16A Lãn Ông, Nha Trang', note:'숯불 돼지고기 라이스페이퍼 쌈', lat:12.2542, lon:109.1937},
+ {id:'bmphuong', cat:'맛집', ko:'반미 퐁', vi:'Bánh Mì Phượng', addr:'Ngã Sáu, Nha Trang', note:'호이안 명가 분점, 해산물 반미', lat:12.2468, lon:109.1892},
+ {id:'cong', cat:'카페', ko:'콩카페', vi:'Cộng Cà Phê', addr:'27 Nguyễn Thiện Thuật, Nha Trang', note:'코코넛 스무디 커피', lat:12.2325, lon:109.1943},
+ {id:'an', cat:'카페', ko:'안카페', vi:'An Cafe', addr:'40 Lê Đại Hành, Nha Trang', note:'정원 카페', lat:12.2401, lon:109.1884, approx:true},
+ {id:'rain', cat:'카페', ko:'레인포레스트 카페', vi:'Rainforest Cafe', addr:'79B Tô Hiến Thành, Nha Trang', note:'정글 인테리어', lat:12.2407, lon:109.1923, approx:true},
+ {id:'cccp', cat:'카페', ko:'CCCP 커피', vi:'CCCP Coffee', addr:'Nguyễn Thiện Thuật, Nha Trang', note:'코코넛 커피·망고 스무디, 시내 3개 지점(거리는 응우옌티엔투엇 지점 기준)', lat:12.2321, lon:109.1951, approx:true},
+ {id:'langfarm', cat:'카페', ko:'랑팜 뷔페', vi:"L'angfarm Buffet", addr:"L'angfarm Buffet, Nha Trang", note:'디저트 뷔페 + 기념품 쇼핑. ※ 나트랑 지점 주소가 검색되지 않고 폐업 표시가 있어 영업 여부 확인 필요'},
+ {id:'runam', cat:'카페', ko:'루남 비스트로', vi:'Runam Bistro', addr:'32-34 Trần Phú, Nha Trang', note:'고급 커피, 쉐라톤 옆', lat:12.2450, lon:109.1958},
+ {id:'dam', cat:'쇼핑', ko:'담시장', vi:'Chợ Đầm', addr:'Chợ Đầm, Vạn Thạnh, Nha Trang', note:'현금·흥정, 1.5시간', when:'11/27 오후', lat:12.2553, lon:109.1917},
+ {id:'night', cat:'쇼핑', ko:'나트랑 야시장', vi:'Nha Trang Night Market', addr:'46 Trần Phú, Lộc Thọ, Nha Trang', note:'18:00~23:00', lat:12.2418, lon:109.1958, approx:true},
+ {id:'lotte', cat:'쇼핑', ko:'롯데마트', vi:'LOTTE Mart Nha Trang', addr:'58 Đường 23 Tháng 10, Phương Sơn, Nha Trang', note:'커피·캐슈넛·건망고 정찰제', lat:12.2521, lon:109.1773},
+ {id:'sailing', cat:'밤', ko:'세일링 클럽', vi:'Sailing Club', addr:'72-74 Trần Phú, Nha Trang', note:'비치클럽, 칵테일·불쇼', lat:12.2340, lon:109.1979},
+ {id:'sky', cat:'밤', ko:'스카이라이트 루프탑', vi:'Skylight Nha Trang', addr:'38 Trần Phú, Nha Trang', note:'루프탑 바, 해변 야경', lat:12.2427, lon:109.1970},
+ {id:'iresort', cat:'휴양', ko:'아이리조트 머드온천', vi:'I-Resort', addr:'Tổ 19, Thôn Xuân Ngọc, Vĩnh Ngọc, Nha Trang', note:'머드욕 + 온천풀, 08:00~18:00', when:'11/29 오후', lat:12.2718, lon:109.1748},
+ {id:'panama', cat:'숙소', ko:'파나마 나트랑 호텔', vi:'Panama Nha Trang Hotel', addr:'39 Hùng Vương, Lộc Thọ, Nha Trang', note:'1박(11/26) 숙소. 시내 남쪽, 해변까지 도보 5분', lat:12.2369, lon:109.1958},
+ {id:'melia', cat:'숙소', ko:'멜리아 세레니티 깜란', vi:'Meliá Serenity Cam Ranh Beach Resort', addr:'Bãi Dài, Cam Hải Đông, Cam Lâm', note:'2박(11/27) 숙소. 바이다이 해변, 공항에서 약 9km, 시내에서 약 35km', lat:12.0643, lon:109.1974},
+ {id:'amiana', cat:'숙소', ko:'아미아나 리조트', vi:'Amiana Resort Nha Trang', addr:'Turtle Bay, Phạm Văn Đồng, Nha Trang', note:'3박(11/28) 숙소. 시내 북쪽 약 8km, 시내 셔틀 운행', lat:12.2954, lon:109.2338},
+ {id:'airport', cat:'숙소', ko:'깜란 국제공항', vi:'Cam Ranh International Airport', addr:'Cam Ranh, Khánh Hòa', note:'11/26 22:40 도착 / 11/29 23:40 출발', lat:11.9983, lon:109.2174},
 ];
 const P = Object.fromEntries(PLACES.map(p=>[p.id,p]));
+/* 일차별 기준 숙소: 그날 밤 묵는 곳. 4일차는 체크아웃한 아미아나 기준 */
+const HOTEL_OF_DAY = ['panama','melia','amiana','amiana'];
 const DAYS = [
  {d:'11.26', w:'목', items:[
    {t:'19:30', w:'김해 출발'},
-   {t:'22:40', w:'깜란 공항 도착', n:'시내까지 약 45분. 픽업은 나트랑도깨비 카톡 채널', p:'airport'},
-   {t:'밤', w:'호텔 체크인', n:'위 숙박 카드의 바우처 제시'},
+   {t:'22:40', w:'깜란 공항 도착', n:'픽업은 나트랑도깨비 카톡 채널', p:'airport', nodist:true},
+   {t:'밤', w:'파나마 나트랑 호텔 체크인', n:'공항에서 시내 남쪽까지. 바우처 제시', p:'panama', from:'airport'},
  ]},
  {d:'11.27', w:'금', items:[
-   {t:'오전', w:'해변·카페', n:'루남 비스트로(쉐라톤 옆)·콩카페 등', free:true},
-   {t:'점심', w:'포한푹', p:'phohp'},
-   {t:'오후', w:'담시장 쇼핑 1.5시간', p:'dam'},
-   {t:'저녁', w:'목식당', p:'moc'},
-   {t:'밤', w:'야시장 또는 루프탑', n:'야시장 18:00~23:00 / 스카이라이트 / 세일링 클럽', free:true},
+   {t:'오전', w:'파나마 체크아웃 · 짐 보관', n:'해변·카페: 루남 비스트로·콩카페 등', free:true},
+   {t:'점심', w:'포한푹', p:'phohp', from:'panama'},
+   {t:'오후', w:'담시장 쇼핑 1.5시간', p:'dam', from:'panama'},
+   {t:'저녁', w:'목식당', p:'moc', from:'panama'},
+   {t:'밤', w:'멜리아 세레니티 깜란 이동 · 체크인', n:'시내에서 깜란 바이다이까지. 목식당에서 바로 택시/그랩', p:'melia', from:'moc'},
  ]},
  {d:'11.28', w:'토', items:[
-   {t:'오전', w:'휴양·마사지', free:true},
-   {t:'점심', w:'안토이 2호점', p:'anthoi2'},
-   {t:'오후', w:'카페', n:'안카페 · 레인포레스트 · CCCP · 랑팜 중', free:true},
-   {t:'저녁', w:'미정', n:'넴느엉 당반꾸옌 · 반미 퐁 · 세일링 클럽 불쇼 등. 반미 엇 트엉은 토요일 휴무', free:true},
+   {t:'오전', w:'리조트 휴양 · 체크아웃', n:'바이다이 해변. 올인클루시브면 조식·수영장 느긋하게', free:true},
+   {t:'점심', w:'안토이 2호점', p:'anthoi2', from:'melia'},
+   {t:'오후', w:'카페 → 아미아나 체크인', n:'안카페 · 레인포레스트 · CCCP 중 한 곳 들렀다 북쪽으로', free:true},
+   {t:'오후', w:'아미아나 리조트 체크인', n:'시내에서 북쪽 해안. 시내 셔틀 시간표 확인', p:'amiana', from:'anthoi2'},
+   {t:'저녁', w:'미정', n:'넴느엉 당반꾸옌 · 반미 퐁 · 세일링 클럽 불쇼 등. 반미 엇 트엉은 토요일 휴무. 리조트에서 시내까지 셔틀/택시 20분', free:true},
  ]},
  {d:'11.29', w:'일', items:[
-   {t:'오전', w:'체크아웃 · 짐 보관', n:'호텔에 짐 맡기기'},
-   {t:'점심', w:'반미 엇 트엉', p:'bmut'},
-   {t:'오후', w:'아이리조트 머드온천', p:'iresort'},
-   {t:'저녁', w:'반미판', p:'bmphan'},
-   {t:'20:30', w:'공항으로 출발', n:'출발 3시간 전 도착 기준'},
-   {t:'23:40', w:'깜란 출발 → 11/30 06:20 김해', p:'airport'},
+   {t:'오전', w:'아미아나 체크아웃 · 짐 보관', n:'리조트에 짐 맡기고 시내로(셔틀 또는 택시)'},
+   {t:'점심', w:'반미 엇 트엉', p:'bmut', from:'amiana'},
+   {t:'오후', w:'아이리조트 머드온천', p:'iresort', from:'bmut'},
+   {t:'저녁', w:'반미판', p:'bmphan', from:'iresort'},
+   {t:'20:00', w:'아미아나에서 짐 찾아 공항으로', n:'시내→아미아나 20분 + 아미아나→공항 약 1시간. 출발 3시간 전 도착 기준', p:'airport', from:'amiana'},
+   {t:'23:40', w:'깜란 출발 → 11/30 06:20 김해'},
  ]},
 ];
+
+/* 거리: 직선거리 × 1.3(도로 보정). 시간: 시내 22km/h, 장거리 45km/h + 승하차 3분 */
+function distKm(a,b){
+  if(!a||!b||a.lat==null||b.lat==null) return null;
+  const R=6371, toR=x=>x*Math.PI/180;
+  const dLat=toR(b.lat-a.lat), dLon=toR(b.lon-a.lon);
+  const h=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h))*1.3;
+}
+function distText(a,b){
+  const km=distKm(a,b); if(km==null) return '';
+  const min=Math.round(km/(km>10?45:22)*60)+3;
+  const kmTxt = km<1 ? `${Math.round(km*100)*10}m` : `${km<10?km.toFixed(1):Math.round(km)}km`;
+  const walk = km<=1.2 ? ` · 도보 ${Math.round(km/4.5*60)}분` : '';
+  return `${(a.approx||b.approx)?'~':'약 '}${kmTxt} · 차로 ${min}분${walk}`;
+}
+const dirUrl=(a,b)=>'https://www.google.com/maps/dir/?api=1&travelmode=driving&origin='+encodeURIComponent(a.vi+' '+a.addr)+'&destination='+encodeURIComponent(b.vi+' '+b.addr);
+const car='<svg viewBox="0 0 24 24"><path d="M5 17h14M6 11l1.5-4.5h9L18 11M4 11h16v6H4z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg>';
 const CATS = ['전체','맛집','카페','쇼핑','밤','휴양','숙소'];
 const DEFAULT_PACK = ['여권','항공권 e티켓','호텔 바우처','달러·현금 환전','신용카드','휴대폰 충전기·보조배터리','유심 또는 로밍','선크림','수영복','모자·선글라스','슬리퍼','상비약(지사제·소화제)','멀티탭','그랩(Grab) 앱 설치'];
 
@@ -370,14 +405,18 @@ function renderPlan(){
   const D = DAYS[day];
   document.getElementById('dayhead').innerHTML = `<span class="d">${day+1}일차</span><span class="w">${D.d} ${D.w}요일</span>`;
   renderStay();
+  const hotel = P[HOTEL_OF_DAY[day]];
   document.getElementById('timeline').innerHTML = D.items.map(it=>{
     const p = it.p ? P[it.p] : null;
     const note = it.n || (p ? p.note : '');
+    const from = it.from ? P[it.from] : hotel;
+    const dt = (p && from && p!==from && !it.nodist) ? distText(from, p) : '';
     return `<div class="item ${it.free?'free':''}">
       <div class="t">${esc(it.t)}</div>
       <div class="w">${esc(it.w)} ${it.free?'<span class="tag">미정</span>':''}</div>
       ${note?`<div class="n">${esc(note)}</div>`:''}
-      ${p?mapLink(p):''}
+      ${dt?`<div class="dist">${car}<span>${esc(from.ko)}에서 ${esc(dt)}</span></div>`:''}
+      ${p?`<div class="links">${mapLink(p)}${dt?`<a class="maplink" href="${dirUrl(from,p)}" target="_blank" rel="noopener">${car}길찾기</a>`:''}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -423,10 +462,15 @@ async function renderStay(){
   const em = locked ? null : (EMBED[k] || EMBED.all || null);
   const f = (em || locked) ? null : await idb.get(k);
   if (day >= NIGHTS) return;
-  const name = stayNames[k] || (em && em.hotel) || '';
+  const hotel = P[HOTEL_OF_DAY[day]];
+  const name = stayNames[k] || (em && em.hotel) || hotel.ko;
+  const ap = P.airport;
   box.innerHTML = `<div class="stay">
     <div class="hd"><span class="lbl">숙박</span><span>${day+1}박 · ${DAYS[day].d}(${DAYS[day].w}) 체크인</span></div>
     <input type="text" id="stayname" placeholder="숙소명 입력" value="${esc(name)}" autocomplete="off">
+    <div class="vi">${esc(hotel.vi)} · ${esc(hotel.addr)}</div>
+    <div class="dist">${car}<span>공항에서 ${esc(distText(ap, hotel))}${day>0?` · 전날 숙소에서 ${esc(distText(P[HOTEL_OF_DAY[day-1]], hotel))}`:''}</span></div>
+    <div class="links">${mapLink(hotel)}<a class="maplink" href="${dirUrl(day>0?P[HOTEL_OF_DAY[day-1]]:ap, hotel)}" target="_blank" rel="noopener">${car}${day>0?'전날 숙소에서':'공항에서'} 길찾기</a></div>
     <div class="row">
       ${locked ? `<form class="pin" id="pinform"><input type="password" inputmode="numeric" id="pin" placeholder="바우처 비밀번호" autocomplete="off"><button class="btn" type="submit">열기</button><span class="fn" id="pinmsg">바우처는 암호화되어 있습니다. 비밀번호를 넣으면 열립니다.</span></form>`
        : em ? `<button class="btn" type="button" id="vopen">바우처 열기</button><span class="fn">${esc(em.name)}</span>`
@@ -498,20 +542,34 @@ async function openViewer(f, title){
 
 /* ---- places ---- */
 let cat = ls.get('cat','전체');
+let base = ls.get('base', null);   // 거리 기준 숙소 id (없으면 오늘 일차의 숙소)
+const BASES = [['panama','1박 파나마'],['melia','2박 멜리아'],['amiana','3박 아미아나']];
 function renderPlaces(){
+  const b = base || HOTEL_OF_DAY[day];
+  const from = P[b];
   document.getElementById('catchips').innerHTML = CATS.map(c=>`<button class="${c===cat?'on':''}" data-c="${c}">${c}</button>`).join('');
-  const list = PLACES.filter(p=>cat==='전체'||p.cat===cat);
-  document.getElementById('placelist').innerHTML = list.map(p=>`<div class="place">
+  document.getElementById('basechips').innerHTML = `<span class="lbl">거리 기준</span>` + BASES.map(([id,l])=>`<button class="${id===b?'on':''}" data-b="${id}">${l}</button>`).join('');
+  const list = PLACES.filter(p=>cat==='전체'||p.cat===cat)
+    .map(p=>({p, km: p.id===b ? -1 : distKm(from,p)}))
+    .sort((x,y)=>(x.km==null?1e9:x.km)-(y.km==null?1e9:y.km));
+  document.getElementById('placelist').innerHTML = list.map(({p})=>{
+    const dt = p.id===b ? '' : distText(from,p);
+    return `<div class="place">
     <div class="top"><div><div class="nm">${esc(p.ko)}</div><div class="vi">${esc(p.vi)}</div></div><span class="cat">${p.cat}</span></div>
     ${p.when?`<div class="when">${esc(p.when)}</div>`:''}
     <div class="note">${esc(p.note)}</div>
     <div class="addr">${esc(p.addr)}</div>
-    ${mapLink(p)}
-  </div>`).join('');
+    ${p.id===b?`<div class="dist">${car}<span>거리 기준 숙소</span></div>`:dt?`<div class="dist">${car}<span>${esc(from.ko)}에서 ${esc(dt)}</span></div>`:`<div class="dist"><span>위치 미확인 · 지도에서 검색</span></div>`}
+    <div class="links">${mapLink(p)}${dt?`<a class="maplink" href="${dirUrl(from,p)}" target="_blank" rel="noopener">${car}숙소에서 길찾기</a>`:''}</div>
+  </div>`}).join('');
 }
 document.getElementById('catchips').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   cat = b.dataset.c; ls.set('cat', cat); renderPlaces();
+});
+document.getElementById('basechips').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  base = b.dataset.b; ls.set('base', base); renderPlaces();
 });
 
 /* ---- pack ---- */
@@ -555,6 +613,14 @@ document.getElementById('quickvnd').addEventListener('click', e=>{
 const memo = document.getElementById('memo');
 memo.value = ls.get('memo','');
 memo.addEventListener('input', ()=>ls.set('memo', memo.value));
+
+/* ---- info: hotel route summary ---- */
+document.getElementById('hotelkv').innerHTML = [
+  ['11/26', P.airport, P.panama, '공항 → 파나마'],
+  ['11/27', P.panama, P.melia, '파나마 → 멜리아(깜란)'],
+  ['11/28', P.melia, P.amiana, '멜리아 → 아미아나'],
+  ['11/29', P.amiana, P.airport, '아미아나 → 공항'],
+].map(([d,a,b,l])=>`<b>${d}</b><span>${esc(l)}<br><span class="small" style="padding:0">${esc(distText(a,b))}</span></span>`).join('');
 
 /* ---- countdown ---- */
 (function(){
