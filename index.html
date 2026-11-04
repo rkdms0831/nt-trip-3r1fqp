@@ -313,8 +313,9 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
 <script>
 /* 빌드 스크립트(build.ps1)가 바우처 폴더의 파일을 아래에 base64로 넣습니다. 내용은 사람이 읽지 않습니다. */
 const EMBED = {};
-const VAULT = null;//VAULT  (PIN.txt가 있으면 빌드가 바우처를 AES로 암호화해 여기에 넣음)
-const PHOTOS = {};  (사진 폴더의 "장소 한글명.jpg"를 빌드가 넣음)
+/* VAULT: PIN.txt가 있으면 빌드가 바우처를 AES로 암호화해 넣음 / PHOTOS: 사진 폴더의 "장소 한글명.jpg"를 빌드가 넣음 */
+const VAULT = null;//VAULT
+const PHOTOS = {};
 
 /* 좌표: OpenStreetMap(Nominatim) 조회값. ~ 표시는 거리·골목 기준 근사치 */
 const PLACES = [
