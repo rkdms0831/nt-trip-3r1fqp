@@ -136,6 +136,16 @@ input,textarea{font-size:max(16px,1em)}  /* iOS 포커스 확대 방지 */
 .place .when{align-self:flex-start;font-size:12px;font-weight:500;color:var(--yellow-ink);background:var(--yellow);padding:2px 9px;border-radius:999px}
 .place .addr{font-size:12px;color:var(--muted);word-break:break-word}
 .place .maplink{align-self:flex-start}
+.place{cursor:pointer}
+.place .detail{display:none;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--line);margin-top:4px}
+.place.open .detail{display:flex}
+.place .photo{width:100%;height:auto;border-radius:10px;display:block}
+.place .photolink{font-size:12px;color:var(--sky-deep);text-decoration:none;font-weight:500}
+.place .hours{font-size:12px;color:var(--muted)}
+.place .menu{border-collapse:collapse;width:100%;font-size:13px}
+.place .menu td{padding:5px 0;border-bottom:1px dashed var(--line);vertical-align:top}
+.place .menu td:last-child{text-align:right;white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums;padding-left:12px}
+.place .more{align-self:flex-start;border:0;background:var(--mint-soft);color:var(--mint-deep);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;margin-top:2px}
 
 /* ---- 준비물 ---- */
 .check{overflow:hidden}
@@ -304,6 +314,7 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
 /* 빌드 스크립트(build.ps1)가 바우처 폴더의 파일을 아래에 base64로 넣습니다. 내용은 사람이 읽지 않습니다. */
 const EMBED = {};
 const VAULT = null;//VAULT  (PIN.txt가 있으면 빌드가 바우처를 AES로 암호화해 여기에 넣음)
+const PHOTOS = {};  (사진 폴더의 "장소 한글명.jpg"를 빌드가 넣음)
 
 /* 좌표: OpenStreetMap(Nominatim) 조회값. ~ 표시는 거리·골목 기준 근사치 */
 const PLACES = [
@@ -313,8 +324,8 @@ const PLACES = [
  {id:'phohp', cat:'맛집', ko:'포한푹', vi:'Phở Hạnh Phúc', addr:'Lê Quý Đôn, Phước Hòa, Nha Trang', note:'뚝배기 쌀국수', when:'11/27 점심', lat:12.2440, lon:109.1910},
  {id:'bmphan', cat:'맛집', ko:'반미판', vi:'Bánh Mì Phan', addr:'Bạch Đằng, Phước Hòa, Nha Trang', note:'소고기 치즈 반미. 실내 에어컨', when:'11/29 저녁', lat:12.2398487, lon:109.1928906, url:'https://maps.app.goo.gl/L9gZuDADofq6TaPj6'},
  {id:'nhon', cat:'맛집', ko:'엄마손 반미', vi:'Bánh mì Nhõn Bắp', addr:'Ngô Thời Nhiệm, Nha Trang', note:'반미', lat:12.2384022, lon:109.1900962, url:'https://maps.app.goo.gl/bQZpMNrwYxVghDbV9'},
- {id:'phuong', cat:'맛집', ko:'마담프엉', vi:'Madam Phuong', addr:'Hồng Bàng, Nha Trang', note:'베트남 가정식', lat:12.2392868, lon:109.1913021, url:'https://maps.app.goo.gl/kpkrWsYTXV3bW5YB9'},
- {id:'xommoi', cat:'맛집', ko:'씀모이 가든', vi:'Xóm Mới Garden', addr:'Ngô Thời Nhiệm, Nha Trang', note:'정원식 베트남 요리 레스토랑', lat:12.2408829, lon:109.191768, url:'https://maps.app.goo.gl/kbq2jRAS3nYbpWxR7'},
+ {id:'phuong', cat:'맛집', ko:'마담프엉', vi:'Madam Phuong', addr:'111 Hồng Bàng, Nha Trang', note:'베트남 가정식, 브레이크타임 없음', lat:12.2392868, lon:109.1913021, url:'https://maps.app.goo.gl/kpkrWsYTXV3bW5YB9'},
+ {id:'xommoi', cat:'맛집', ko:'씀모이 가든', vi:'Xóm Mới Garden', addr:'144 Võ Trứ, Nha Trang', note:'정원식 베트남 요리, 한국인 입맛에 맞는 구성', lat:12.2408829, lon:109.191768, url:'https://maps.app.goo.gl/kbq2jRAS3nYbpWxR7'},
  {id:'bmut', cat:'맛집', ko:'반미 엇 트엉', vi:'Bánh mì Út Thương', addr:'30/8 Hùng Vương, Nha Trang', note:'07:00~20:30, 토요일 휴무', when:'11/29 점심', lat:12.2395, lon:109.1946},
  {id:'nem', cat:'맛집', ko:'넴느엉 당반꾸옌', vi:'Nem Nướng Đặng Văn Quyền', addr:'16A Lãn Ông, Nha Trang', note:'숯불 돼지고기 라이스페이퍼 쌈', lat:12.2542, lon:109.1937},
  {id:'bmphuong', cat:'맛집', ko:'반미 퐁', vi:'Bánh Mì Phượng', addr:'Ngã Sáu, Nha Trang', note:'호이안 명가 분점, 해산물 반미', lat:12.2468, lon:109.1892},
@@ -334,12 +345,35 @@ const PLACES = [
  {id:'lotte', cat:'쇼핑', ko:'롯데마트 골드코스트점', vi:'Lotte Mart Nha Trang Gold Coast', addr:'1 Trần Hưng Đạo, Nha Trang', note:'시내 골드코스트 쇼핑몰 안. 커피·캐슈넛·건망고 정찰제', lat:12.2481451, lon:109.1948614, url:'https://maps.app.goo.gl/qPvyt9j4m8cGd1bb7'},
  {id:'sailing', cat:'밤', ko:'세일링 클럽', vi:'Sailing Club', addr:'72-74 Trần Phú, Nha Trang', note:'비치클럽, 칵테일·불쇼', lat:12.2340, lon:109.1979},
  {id:'sky', cat:'밤', ko:'스카이라이트 루프탑', vi:'Skylight Nha Trang', addr:'38 Trần Phú, Nha Trang', note:'루프탑 바, 해변 야경', lat:12.2427, lon:109.1970},
- {id:'whitespa', cat:'휴양', ko:'화이트 스파 앤 네일', vi:'White Spa & Nail', addr:'75 Lê Đại Hành, Nha Trang', note:'젤네일 무제한 아트·핫스톤 마사지. 10:00~22:00', lat:12.2401, lon:109.1884, approx:true, url:'https://maps.google.com/?cid=9533613985275616272'},
+ {id:'whitespa', cat:'휴양', ko:'화이트 스파 앤 네일', vi:'White Spa & Nail', addr:'75 Lê Đại Hành, Nha Trang', note:'젤네일 무제한 아트·핫스톤 마사지', hours:'10:00~22:00', lat:12.2401, lon:109.1884, approx:true, url:'https://maps.google.com/?cid=9533613985275616272'},
+ {id:'spalux', cat:'휴양', ko:'스파럭스', vi:'Spa Lux', addr:'73/12 Trần Quang Khải, Nha Trang (디셈버 호텔 옆)', note:'한국인 이용 많음. 75베드 프라이빗 룸, 한국어 매니저, 짐 보관 무료, 오전 예약 10% 추가 할인', hours:'09:00~23:00 (마지막 예약 22:00)', menu:[['아로마 마사지 60분','약 432,000동(예약가), 정가 540,000동'],['스페셜 럭스(대나무·핫스톤·아로마)','']], lat:12.2333, lon:109.1957, approx:true},
+ {id:'gangnam', cat:'휴양', ko:'강남 스파', vi:'Gangnam Spa Nha Trang', addr:'34 Vân Đồn, Phước Hòa, Nha Trang', note:'한국인 이용 후기 많음, 60·90분 선택', menu:[['마사지 60분','약 280,000동부터']], lat:12.2351, lon:109.1836, approx:true},
+ {id:'aman', cat:'휴양', ko:'아만 스파', vi:'Aman Spa Nha Trang', addr:'83 Tô Hiến Thành, Tân Lập, Nha Trang', note:'깔끔한 시설. 아로마·핫스톤·발 마사지', menu:[['오일 마사지 60분','약 566,000동'],['오일 마사지 90분','약 733,000동']], lat:12.2387, lon:109.1923, approx:true},
+ {id:'clover', cat:'휴양', ko:'클로버 스파', vi:'Clover Spa & Massage', addr:'28C Nguyễn Trung Trực, Tân Lập, Nha Trang', note:'마사지·페이셜·바디, 깔끔한 시설. 마지막 날 공항 가기 전 이용 추천 후기', menu:[['마사지 60분','약 440,000동부터']], lat:12.2430, lon:109.1915, approx:true},
+ {id:'su', cat:'휴양', ko:'수 스파', vi:'Su Spa Nha Trang', addr:'229 Nguyễn Thiện Thuật, Nha Trang', note:'우드 인테리어, 2~3시간 코스', menu:[['바디 마사지','약 826,000동부터']], lat:12.2383, lon:109.1936, approx:true},
+ {id:'cham', cat:'휴양', ko:'참 스파 그랜드', vi:'Cham Spa Grand Nha Trang', addr:'43 Đống Đa, Nha Trang (26 Nguyễn Trung Trực 지점도 있음)', note:'동양풍 인테리어, 넓어서 단체 이용에 적합', lat:12.2405, lon:109.1906, approx:true},
+ {id:'henry', cat:'휴양', ko:'헨리 스파', vi:'Henry Spa Nha Trang', addr:'28 Nguyễn Thị Minh Khai, Nha Trang', note:'늦은 시간까지 이용 가능', menu:[['족욕+아로마+허브 찜질 60분','약 300,000동']], lat:12.2363, lon:109.1869, approx:true},
  {id:'panama', cat:'숙소', ko:'파나마 나트랑 호텔', vi:'Panama Nha Trang Hotel', addr:'39 Hùng Vương, Lộc Thọ, Nha Trang', note:'1박(11/26) 숙소. 시내 남쪽, 해변까지 도보 5분', lat:12.2369, lon:109.1958},
  {id:'melia', cat:'숙소', ko:'멜리아 세레니티 깜란', vi:'Meliá Serenity Cam Ranh Beach Resort', addr:'Bãi Dài, Cam Hải Đông, Cam Lâm', note:'2박(11/27) 숙소. 바이다이 해변, 공항에서 약 9km, 시내에서 약 35km', lat:12.0643, lon:109.1974},
  {id:'amiana', cat:'숙소', ko:'아미아나 리조트', vi:'Amiana Resort Nha Trang', addr:'Turtle Bay, Phạm Văn Đồng, Nha Trang', note:'3박(11/28) 숙소. 시내 북쪽 약 8km, 시내 셔틀 운행', lat:12.2954, lon:109.2338},
  {id:'airport', cat:'숙소', ko:'깜란 국제공항', vi:'Cam Ranh International Airport', addr:'Cam Ranh, Khánh Hòa', note:'11/26 22:40 도착 / 11/29 23:40 출발', lat:11.9983, lon:109.2174},
 ];
+/* 대표 메뉴·영업시간. 가격은 확인된 것만, 미확인은 빈칸 */
+const EXTRA = {
+  moc:{hours:'10:30~22:30', menu:[['마늘버터 새우 구이',''],['크랩·랍스터 버터갈릭/치즈 구이',''],['파기름 가리비 구이',''],['맛조개 모닝글로리 볶음',''],['마늘 볶음밥','']]},
+  anthoi2:{menu:[['분짜 세트',''],['소곱창 쌀국수',''],['짜조(스프링롤)','']]},
+  anthoi1:{menu:[['분짜 세트',''],['소곱창 쌀국수',''],['짜조(스프링롤)','']]},
+  phohp:{menu:[['뚝배기 쌀국수','']]},
+  bmphan:{hours:'07:00~21:30', menu:[['소고기 치즈 반미','55,000동'],['새우 반미','']], note2:'현금·QR만, 카드 불가'},
+  bmut:{hours:'07:00~20:30 (토 휴무)', menu:[['반미','']]},
+  nem:{menu:[['넴느엉 세트(숯불 돼지고기 + 라이스페이퍼)','']]},
+  xommoi:{hours:'06:30~22:30', menu:[['반쎄오',''],['넴느엉',''],['분짜',''],['소고기·해산물 쌀국수','']], note2:'로컬 식당보다 가격대 높은 편'},
+  phuong:{hours:'11:00~22:00', menu:[['반쎄오',''],['곱창 쌀국수',''],['분짜',''],['파인애플 볶음밥',''],['넴루이','']], note2:'카드 결제 시 3% 수수료'},
+  cong:{menu:[['코코넛 스무디 커피','약 55,000~69,000동(지점별)'],['박씨유(연유 커피)','']]},
+  an:{hours:'06:30~22:00', menu:[['코코넛 커피',''],['코코넛 아이스크림',''],['카페 쓰어다','']], note2:'음료 4~6만동대, 현금만'},
+  night:{hours:'18:00~23:00'},
+};
+for (const [id,x] of Object.entries(EXTRA)) { const p = PLACES.find(q=>q.id===id); if (p) { Object.assign(p, {hours:x.hours||p.hours, menu:x.menu||p.menu}); if (x.note2) p.note += '. ' + x.note2; } }
 const P = Object.fromEntries(PLACES.map(p=>[p.id,p]));
 /* 일차별 기준 숙소: 그날 밤 묵는 곳. 4일차는 체크아웃한 아미아나 기준 */
 const HOTEL_OF_DAY = ['panama','melia','amiana','amiana'];
@@ -562,15 +596,33 @@ function renderPlaces(){
     .sort((x,y)=>(x.km==null?1e9:x.km)-(y.km==null?1e9:y.km));
   document.getElementById('placelist').innerHTML = list.map(({p})=>{
     const dt = p.id===b ? '' : distText(from,p);
-    return `<div class="place">
+    const photo = PHOTOS[p.ko];
+    const hasDetail = true;
+    const photoUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.vi + ' ' + p.addr);
+    return `<div class="place ${openIds.has(p.id)?'open':''}" data-id="${p.id}">
     <div class="top"><div><div class="nm">${esc(p.ko)}</div><div class="vi">${esc(p.vi)}</div></div><span class="cat">${p.cat}</span></div>
     ${p.when?`<div class="when">${esc(p.when)}</div>`:''}
     <div class="note">${esc(p.note)}</div>
     <div class="addr">${esc(p.addr)}</div>
     ${p.id===b?`<div class="dist">${car}<span>거리 기준 숙소</span></div>`:dt?`<div class="dist">${car}<span>${esc(from.ko)}에서 ${esc(dt)}</span></div>`:`<div class="dist"><span>위치 미확인 · 지도에서 검색</span></div>`}
     <div class="links">${mapLink(p)}${dt?`<a class="maplink" href="${dirUrl(from,p)}" target="_blank" rel="noopener">${car}숙소에서 길찾기</a>`:''}</div>
+    ${hasDetail?`<div class="detail">
+      ${photo?`<img class="photo" src="${photo}" alt="${esc(p.ko)}" loading="lazy">`:`<a class="photolink" href="${p.url||photoUrl}" target="_blank" rel="noopener">구글맵에서 사진 보기</a>`}
+      ${p.hours?`<div class="hours">영업 ${esc(p.hours)}</div>`:''}
+      ${p.menu&&p.menu.length?`<table class="menu">${p.menu.map(([n,pr])=>`<tr><td>${esc(n)}</td><td>${esc(pr||'')}</td></tr>`).join('')}</table>`:''}
+    </div><button class="more" type="button" aria-label="자세히">${openIds.has(p.id)?'접기':'메뉴·사진 보기'}</button>`:''}
   </div>`}).join('');
 }
+const openIds = new Set();
+document.getElementById('placelist').addEventListener('click', e=>{
+  if (e.target.closest('a')) return;
+  const card = e.target.closest('.place'); if(!card) return;
+  const id = card.dataset.id;
+  if (!card.querySelector('.detail')) return;
+  if (openIds.has(id)) openIds.delete(id); else openIds.add(id);
+  card.classList.toggle('open', openIds.has(id));
+  card.querySelector('.more').textContent = openIds.has(id) ? '접기' : '메뉴·사진 보기';
+});
 document.getElementById('catchips').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   cat = b.dataset.c; ls.set('cat', cat); renderPlaces();
