@@ -311,11 +311,18 @@ const PLACES = [
  {id:'anthoi2', cat:'맛집', ko:'안토이 2호점', vi:'Ăn Thôi 2', addr:'64C Nguyễn Thị Minh Khai, Nha Trang', note:'분짜 세트·소곱창 쌀국수. 웨이팅 적은 지점, 예약 불가', when:'11/28 점심', lat:12.2380, lon:109.1915},
  {id:'anthoi1', cat:'맛집', ko:'안토이 1호점', vi:'Ăn Thôi', addr:'3 Ngô Đức Kế, Nha Trang', note:'대기 긺, 16시쯤 가면 바로 입장', lat:12.2398, lon:109.1899},
  {id:'phohp', cat:'맛집', ko:'포한푹', vi:'Phở Hạnh Phúc', addr:'Lê Quý Đôn, Phước Hòa, Nha Trang', note:'뚝배기 쌀국수', when:'11/27 점심', lat:12.2440, lon:109.1910},
- {id:'bmphan', cat:'맛집', ko:'반미판', vi:'Bánh Mì Phan', addr:'Bạch Đằng, Phước Hòa, Nha Trang', note:'소고기 치즈 반미. 실내 에어컨', when:'11/29 저녁', lat:12.2398, lon:109.1929},
+ {id:'bmphan', cat:'맛집', ko:'반미판', vi:'Bánh Mì Phan', addr:'Bạch Đằng, Phước Hòa, Nha Trang', note:'소고기 치즈 반미. 실내 에어컨', when:'11/29 저녁', lat:12.2398487, lon:109.1928906, url:'https://maps.app.goo.gl/L9gZuDADofq6TaPj6'},
+ {id:'nhon', cat:'맛집', ko:'엄마손 반미', vi:'Bánh mì Nhõn Bắp', addr:'Ngô Thời Nhiệm, Nha Trang', note:'반미', lat:12.2384022, lon:109.1900962, url:'https://maps.app.goo.gl/bQZpMNrwYxVghDbV9'},
+ {id:'phuong', cat:'맛집', ko:'마담프엉', vi:'Madam Phuong', addr:'Hồng Bàng, Nha Trang', note:'베트남 가정식', lat:12.2392868, lon:109.1913021, url:'https://maps.app.goo.gl/kpkrWsYTXV3bW5YB9'},
  {id:'bmut', cat:'맛집', ko:'반미 엇 트엉', vi:'Bánh mì Út Thương', addr:'30/8 Hùng Vương, Nha Trang', note:'07:00~20:30, 토요일 휴무', when:'11/29 점심', lat:12.2395, lon:109.1946},
  {id:'nem', cat:'맛집', ko:'넴느엉 당반꾸옌', vi:'Nem Nướng Đặng Văn Quyền', addr:'16A Lãn Ông, Nha Trang', note:'숯불 돼지고기 라이스페이퍼 쌈', lat:12.2542, lon:109.1937},
  {id:'bmphuong', cat:'맛집', ko:'반미 퐁', vi:'Bánh Mì Phượng', addr:'Ngã Sáu, Nha Trang', note:'호이안 명가 분점, 해산물 반미', lat:12.2468, lon:109.1892},
  {id:'cong', cat:'카페', ko:'콩카페', vi:'Cộng Cà Phê', addr:'27 Nguyễn Thiện Thuật, Nha Trang', note:'코코넛 스무디 커피', lat:12.2325, lon:109.1943},
+ {id:'sol', cat:'카페', ko:'솔 커피 & 디저트', vi:'Sol Coffee & Desserts', addr:'Nhị Hà, Nha Trang', note:'커피·디저트', lat:12.2361876, lon:109.1814399, url:'https://maps.app.goo.gl/4pj5K5CBmioNsZW46'},
+ {id:'than', cat:'카페', ko:'탄 더 그리너리', vi:'Than - The Greenery', addr:'Đống Đa, Nha Trang', note:'식물 가득한 카페', lat:12.2404086, lon:109.1905876, url:'https://maps.app.goo.gl/DdPv9f2nXxdsUsLK6'},
+ {id:'chuck', cat:'카페', ko:'척칩', vi:'Chuck Chip', addr:'Võ Trứ, Nha Trang', note:'쿠키·디저트', lat:12.2429876, lon:109.1895122, url:'https://maps.app.goo.gl/VA8fjeK7HHtpKgku8'},
+ {id:'typ', cat:'카페', ko:'팁 커피 & 베이커리', vi:'týp coffee & bakery', addr:'Nha Trang 시내', note:'커피·빵', lat:12.2408623, lon:109.1936406, url:'https://maps.app.goo.gl/dczdVrNhHS9MPH6q7'},
+ {id:'ola', cat:'카페', ko:'올라 카페', vi:'Ola Cafe', addr:'Nguyễn Hữu Huân, Nha Trang', note:'카페', lat:12.2401569, lon:109.1867309, url:'https://maps.app.goo.gl/d32VA5JwGetQFxHv6'},
  {id:'an', cat:'카페', ko:'안카페', vi:'An Cafe', addr:'40 Lê Đại Hành, Nha Trang', note:'정원 카페', lat:12.2401, lon:109.1884, approx:true},
  {id:'rain', cat:'카페', ko:'레인포레스트 카페', vi:'Rainforest Cafe', addr:'79B Tô Hiến Thành, Nha Trang', note:'정글 인테리어', lat:12.2407, lon:109.1923, approx:true},
  {id:'cccp', cat:'카페', ko:'CCCP 커피', vi:'CCCP Coffee', addr:'Nguyễn Thiện Thuật, Nha Trang', note:'코코넛 커피·망고 스무디, 시내 3개 지점(거리는 응우옌티엔투엇 지점 기준)', lat:12.2321, lon:109.1951, approx:true},
@@ -323,7 +330,7 @@ const PLACES = [
  {id:'runam', cat:'카페', ko:'루남 비스트로', vi:'Runam Bistro', addr:'32-34 Trần Phú, Nha Trang', note:'고급 커피, 쉐라톤 옆', lat:12.2450, lon:109.1958},
  {id:'dam', cat:'쇼핑', ko:'담시장', vi:'Chợ Đầm', addr:'Chợ Đầm, Vạn Thạnh, Nha Trang', note:'현금·흥정, 1.5시간', when:'11/27 오후', lat:12.2553, lon:109.1917},
  {id:'night', cat:'쇼핑', ko:'나트랑 야시장', vi:'Nha Trang Night Market', addr:'46 Trần Phú, Lộc Thọ, Nha Trang', note:'18:00~23:00', lat:12.2418, lon:109.1958, approx:true},
- {id:'lotte', cat:'쇼핑', ko:'롯데마트', vi:'LOTTE Mart Nha Trang', addr:'58 Đường 23 Tháng 10, Phương Sơn, Nha Trang', note:'커피·캐슈넛·건망고 정찰제', lat:12.2521, lon:109.1773},
+ {id:'lotte', cat:'쇼핑', ko:'롯데마트 골드코스트점', vi:'Lotte Mart Nha Trang Gold Coast', addr:'1 Trần Hưng Đạo, Nha Trang', note:'시내 골드코스트 쇼핑몰 안. 커피·캐슈넛·건망고 정찰제', lat:12.2481451, lon:109.1948614, url:'https://maps.app.goo.gl/qPvyt9j4m8cGd1bb7'},
  {id:'sailing', cat:'밤', ko:'세일링 클럽', vi:'Sailing Club', addr:'72-74 Trần Phú, Nha Trang', note:'비치클럽, 칵테일·불쇼', lat:12.2340, lon:109.1979},
  {id:'sky', cat:'밤', ko:'스카이라이트 루프탑', vi:'Skylight Nha Trang', addr:'38 Trần Phú, Nha Trang', note:'루프탑 바, 해변 야경', lat:12.2427, lon:109.1970},
  {id:'iresort', cat:'휴양', ko:'아이리조트 머드온천', vi:'I-Resort', addr:'Tổ 19, Thôn Xuân Ngọc, Vĩnh Ngọc, Nha Trang', note:'머드욕 + 온천풀, 08:00~18:00', when:'11/29 오후', lat:12.2718, lon:109.1748},
@@ -392,7 +399,7 @@ const ls = {
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mapUrl = p => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.vi + ' ' + p.addr);
 const pin = '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
-const mapLink = p => `<a class="maplink" href="${mapUrl(p)}" target="_blank" rel="noopener">${pin}지도 열기</a>`;
+const mapLink = p => `<a class="maplink" href="${p.url || mapUrl(p)}" target="_blank" rel="noopener">${pin}지도 열기</a>`;
 
 /* ---- plan ---- */
 let day = ls.get('day', null);
