@@ -139,7 +139,11 @@ input,textarea{font-size:max(16px,1em)}  /* iOS 포커스 확대 방지 */
 .place{cursor:pointer}
 .place .detail{display:none;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--line);margin-top:4px}
 .place.open .detail{display:flex}
-.place .photo{width:100%;height:auto;border-radius:10px;display:block}
+.place .photos{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.place .photos::-webkit-scrollbar{display:none}
+.place .photos figure{margin:0;flex:0 0 76%;max-width:320px}
+.place .photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;display:block;background:var(--line)}
+.place .photos figcaption{font-size:11px;color:var(--muted);margin-top:3px}
 .place .photolink{font-size:12px;color:var(--sky-deep);text-decoration:none;font-weight:500}
 .place .hours{font-size:12px;color:var(--muted)}
 .place .menu{border-collapse:collapse;width:100%;font-size:13px}
@@ -315,7 +319,7 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
 const EMBED = {};
 /* VAULT: PIN.txt가 있으면 빌드가 바우처를 AES로 암호화해 넣음 / PHOTOS: 사진 폴더의 "장소 한글명.jpg"를 빌드가 넣음 */
 const VAULT = null;//VAULT
-const PHOTOS = {};
+const PHOTOS = {'aman':[{src:'photos/aman.jpg',kind:'photo'},{src:'photos/aman_2.jpg',kind:'photo'},{src:'photos/aman_3.jpg',kind:'photo'},{src:'photos/aman_sv.jpg',kind:'sv'}],'amiana':[{src:'photos/amiana.jpg',kind:'photo'},{src:'photos/amiana_2.jpg',kind:'photo'},{src:'photos/amiana_3.jpg',kind:'photo'}],'an':[{src:'photos/an.jpg',kind:'photo'},{src:'photos/an_2.jpg',kind:'photo'},{src:'photos/an_3.jpg',kind:'photo'},{src:'photos/an_sv.jpg',kind:'sv'}],'anthoi1':[{src:'photos/anthoi1.jpg',kind:'photo'},{src:'photos/anthoi1_sv.jpg',kind:'sv'}],'anthoi2':[{src:'photos/anthoi2.jpg',kind:'photo'},{src:'photos/anthoi2_sv.jpg',kind:'sv'}],'bmphan':[{src:'photos/bmphan.jpg',kind:'photo'},{src:'photos/bmphan_2.jpg',kind:'photo'},{src:'photos/bmphan_3.jpg',kind:'photo'},{src:'photos/bmphan_sv.jpg',kind:'sv'}],'bmphuong':[{src:'photos/bmphuong.jpg',kind:'photo'},{src:'photos/bmphuong_2.jpg',kind:'photo'},{src:'photos/bmphuong_3.jpg',kind:'photo'}],'bmut':[{src:'photos/bmut.jpg',kind:'photo'},{src:'photos/bmut_2.jpg',kind:'photo'},{src:'photos/bmut_3.jpg',kind:'photo'},{src:'photos/bmut_sv.jpg',kind:'sv'}],'cccp':[{src:'photos/cccp.jpg',kind:'photo'},{src:'photos/cccp_2.jpg',kind:'photo'}],'cham':[{src:'photos/cham.jpg',kind:'photo'},{src:'photos/cham_2.jpg',kind:'photo'},{src:'photos/cham_3.jpg',kind:'photo'}],'chuck':[{src:'photos/chuck.jpg',kind:'photo'},{src:'photos/chuck_2.jpg',kind:'photo'},{src:'photos/chuck_3.jpg',kind:'photo'}],'clover':[{src:'photos/clover.jpg',kind:'photo'},{src:'photos/clover_sv.jpg',kind:'sv'}],'cong':[{src:'photos/cong.jpg',kind:'photo'},{src:'photos/cong_2.jpg',kind:'photo'},{src:'photos/cong_3.jpg',kind:'photo'},{src:'photos/cong_sv.jpg',kind:'sv'}],'dam':[{src:'photos/dam.jpg',kind:'photo'},{src:'photos/dam_2.jpg',kind:'photo'},{src:'photos/dam_3.jpg',kind:'photo'}],'gangnam':[{src:'photos/gangnam.jpg',kind:'photo'},{src:'photos/gangnam_2.jpg',kind:'photo'},{src:'photos/gangnam_3.jpg',kind:'photo'},{src:'photos/gangnam_sv.jpg',kind:'sv'}],'henry':[{src:'photos/henry.jpg',kind:'photo'},{src:'photos/henry_2.jpg',kind:'photo'},{src:'photos/henry_3.jpg',kind:'photo'},{src:'photos/henry_sv.jpg',kind:'sv'}],'lotte':[{src:'photos/lotte.jpg',kind:'photo'},{src:'photos/lotte_2.jpg',kind:'photo'},{src:'photos/lotte_3.jpg',kind:'photo'}],'melia':[{src:'photos/melia.jpg',kind:'photo'},{src:'photos/melia_2.jpg',kind:'photo'}],'moc':[{src:'photos/moc.jpg',kind:'photo'},{src:'photos/moc_2.jpg',kind:'photo'},{src:'photos/moc_3.jpg',kind:'photo'},{src:'photos/moc_sv.jpg',kind:'sv'}],'nem':[{src:'photos/nem.jpg',kind:'photo'},{src:'photos/nem_2.jpg',kind:'photo'}],'nhon':[{src:'photos/nhon.jpg',kind:'photo'},{src:'photos/nhon_2.jpg',kind:'photo'},{src:'photos/nhon_3.jpg',kind:'photo'},{src:'photos/nhon_sv.jpg',kind:'sv'}],'ola':[{src:'photos/ola.jpg',kind:'photo'},{src:'photos/ola_2.jpg',kind:'photo'},{src:'photos/ola_3.jpg',kind:'photo'}],'panama':[{src:'photos/panama.jpg',kind:'photo'}],'phohp':[{src:'photos/phohp.jpg',kind:'photo'},{src:'photos/phohp_2.jpg',kind:'photo'},{src:'photos/phohp_3.jpg',kind:'photo'}],'phuong':[{src:'photos/phuong.jpg',kind:'photo'},{src:'photos/phuong_2.jpg',kind:'photo'},{src:'photos/phuong_3.jpg',kind:'photo'},{src:'photos/phuong_sv.jpg',kind:'sv'}],'runam':[{src:'photos/runam.jpg',kind:'photo'},{src:'photos/runam_2.jpg',kind:'photo'},{src:'photos/runam_3.jpg',kind:'photo'},{src:'photos/runam_sv.jpg',kind:'sv'}],'sailing':[{src:'photos/sailing.jpg',kind:'photo'},{src:'photos/sailing_2.jpg',kind:'photo'},{src:'photos/sailing_3.jpg',kind:'photo'},{src:'photos/sailing_sv.jpg',kind:'sv'}],'sky':[{src:'photos/sky.jpg',kind:'photo'}],'sol':[{src:'photos/sol.jpg',kind:'photo'},{src:'photos/sol_sv.jpg',kind:'sv'}],'spalux':[{src:'photos/spalux.jpg',kind:'photo'},{src:'photos/spalux_2.jpg',kind:'photo'},{src:'photos/spalux_3.jpg',kind:'photo'}],'su':[{src:'photos/su.jpg',kind:'photo'}],'than':[{src:'photos/than.jpg',kind:'photo'},{src:'photos/than_2.jpg',kind:'photo'},{src:'photos/than_3.jpg',kind:'photo'},{src:'photos/than_sv.jpg',kind:'sv'}],'typ':[{src:'photos/typ.jpg',kind:'photo'},{src:'photos/typ_2.jpg',kind:'photo'},{src:'photos/typ_3.jpg',kind:'photo'},{src:'photos/typ_sv.jpg',kind:'sv'}],'whitespa':[{src:'photos/whitespa.jpg',kind:'photo'},{src:'photos/whitespa_sv.jpg',kind:'sv'}],'xommoi':[{src:'photos/xommoi.jpg',kind:'photo'},{src:'photos/xommoi_sv.jpg',kind:'sv'}]};
 
 /* 좌표: OpenStreetMap(Nominatim) 조회값. ~ 표시는 거리·골목 기준 근사치 */
 const PLACES = [
@@ -597,7 +601,7 @@ function renderPlaces(){
     .sort((x,y)=>(x.km==null?1e9:x.km)-(y.km==null?1e9:y.km));
   document.getElementById('placelist').innerHTML = list.map(({p})=>{
     const dt = p.id===b ? '' : distText(from,p);
-    const photo = PHOTOS[p.ko];
+    const ph = PHOTOS[p.id] || PHOTOS[p.ko] || [];
     const hasDetail = true;
     const photoUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.vi + ' ' + p.addr);
     return `<div class="place ${openIds.has(p.id)?'open':''}" data-id="${p.id}">
@@ -608,7 +612,7 @@ function renderPlaces(){
     ${p.id===b?`<div class="dist">${car}<span>거리 기준 숙소</span></div>`:dt?`<div class="dist">${car}<span>${esc(from.ko)}에서 ${esc(dt)}</span></div>`:`<div class="dist"><span>위치 미확인 · 지도에서 검색</span></div>`}
     <div class="links">${mapLink(p)}${dt?`<a class="maplink" href="${dirUrl(from,p)}" target="_blank" rel="noopener">${car}숙소에서 길찾기</a>`:''}</div>
     ${hasDetail?`<div class="detail">
-      ${photo?`<img class="photo" src="${photo}" alt="${esc(p.ko)}" loading="lazy">`:`<a class="photolink" href="${p.url||photoUrl}" target="_blank" rel="noopener">구글맵에서 사진 보기</a>`}
+      ${ph.length?`<div class="photos">${ph.map(x=>`<figure><img src="${x.src}" alt="${esc(p.ko)}" loading="lazy"><figcaption>${x.kind==='sv'?'거리뷰 · 외관':'구글맵 사진'}</figcaption></figure>`).join('')}</div>`:`<a class="photolink" href="${p.url||photoUrl}" target="_blank" rel="noopener">구글맵에서 사진 보기</a>`}
       ${p.hours?`<div class="hours">영업 ${esc(p.hours)}</div>`:''}
       ${p.menu&&p.menu.length?`<table class="menu">${p.menu.map(([n,pr])=>`<tr><td>${esc(n)}</td><td>${esc(pr||'')}</td></tr>`).join('')}</table>`:''}
     </div><button class="more" type="button" aria-label="자세히">${openIds.has(p.id)?'접기':'메뉴·사진 보기'}</button>`:''}
