@@ -204,13 +204,14 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
   </section>
 
   <section class="view" id="view-pack" hidden>
+    <div class="chips" id="whochips"></div>
     <div class="progress" id="packprog"></div>
     <div class="check" id="checklist"></div>
     <form class="addrow" id="addform">
       <input id="additem" placeholder="준비물 추가" autocomplete="off">
       <button class="btn" type="submit">추가</button>
     </form>
-    <button class="btn ghost" type="button" id="resetpack">체크 모두 해제</button>
+    <button class="btn ghost" type="button" id="resetpack">내 체크 모두 해제</button>
   </section>
 
   <section class="view" id="view-info" hidden>
@@ -638,29 +639,49 @@ document.getElementById('basechips').addEventListener('click', e=>{
 });
 
 /* ---- pack ---- */
-let pack = ls.get('pack', null) || DEFAULT_PACK.map(t=>({t, ok:false}));
-function savePack(){ ls.set('pack', pack); renderPack(); }
+// 항목은 둘이 공유, 체크는 사람별로 따로 저장 (pack2 = {items:[...], ok:{은서:{항목:true}, 가은:{...}}})
+const WHO = ['은서','가은'];
+let who = ls.get('who', WHO[0]); if(!WHO.includes(who)) who = WHO[0];
+let pack = ls.get('pack2', null);
+if(!pack){
+  const old = ls.get('pack', null);   // 예전 단일 목록이 있으면 항목만 이어받음
+  pack = { items: old ? old.map(x=>x.t) : DEFAULT_PACK.slice(), ok: {} };
+  WHO.forEach(w=>pack.ok[w]={});
+}
+WHO.forEach(w=>{ if(!pack.ok[w]) pack.ok[w]={}; });
+function savePack(){ ls.set('pack2', pack); renderPack(); }
 function renderPack(){
-  const done = pack.filter(x=>x.ok).length;
-  document.getElementById('packprog').textContent = `${done} / ${pack.length} 챙김`;
-  document.getElementById('checklist').innerHTML = pack.map((x,i)=>`<label>
-    <input type="checkbox" id="pk${i}" data-i="${i}" ${x.ok?'checked':''}>
-    <span class="${x.ok?'done':''}">${esc(x.t)}</span>
+  const mine = pack.ok[who];
+  const done = pack.items.filter(t=>mine[t]).length;
+  document.getElementById('whochips').innerHTML = WHO.map(w=>{
+    const n = pack.items.filter(t=>pack.ok[w][t]).length;
+    return `<button type="button" class="${w===who?'on':''}" data-who="${w}">${w} ${n}/${pack.items.length}</button>`;
+  }).join('');
+  document.getElementById('packprog').textContent = `${who} · ${done} / ${pack.items.length} 챙김`;
+  document.getElementById('checklist').innerHTML = pack.items.map((t,i)=>`<label>
+    <input type="checkbox" id="pk${i}" data-i="${i}" ${mine[t]?'checked':''}>
+    <span class="${mine[t]?'done':''}">${esc(t)}</span>
     <button type="button" class="del" data-del="${i}" aria-label="삭제">×</button>
   </label>`).join('');
 }
+document.getElementById('whochips').addEventListener('click', e=>{
+  const b = e.target.closest('[data-who]'); if(!b) return;
+  who = b.dataset.who; ls.set('who', who); renderPack();
+});
 document.getElementById('checklist').addEventListener('change', e=>{
-  if(e.target.matches('input')){ pack[+e.target.dataset.i].ok = e.target.checked; savePack(); }
+  if(e.target.matches('input')){ const t = pack.items[+e.target.dataset.i]; pack.ok[who][t] = e.target.checked; savePack(); }
 });
 document.getElementById('checklist').addEventListener('click', e=>{
   const b = e.target.closest('[data-del]'); if(!b) return;
-  e.preventDefault(); pack.splice(+b.dataset.del,1); savePack();
+  e.preventDefault(); const t = pack.items.splice(+b.dataset.del,1)[0];
+  WHO.forEach(w=>delete pack.ok[w][t]); savePack();
 });
 document.getElementById('addform').addEventListener('submit', e=>{
   e.preventDefault(); const inp = document.getElementById('additem'); const t = inp.value.trim();
-  if(!t) return; pack.push({t, ok:false}); inp.value=''; savePack();
+  if(!t || pack.items.includes(t)) { inp.value=''; return; }
+  pack.items.push(t); inp.value=''; savePack();
 });
-document.getElementById('resetpack').addEventListener('click', ()=>{ pack.forEach(x=>x.ok=false); savePack(); });
+document.getElementById('resetpack').addEventListener('click', ()=>{ pack.ok[who] = {}; savePack(); });
 
 /* ---- info: fx ---- */
 const rateEl = document.getElementById('rate'), vndEl = document.getElementById('vnd'), krwEl = document.getElementById('krw');
