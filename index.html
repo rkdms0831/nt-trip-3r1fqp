@@ -89,6 +89,9 @@ nav.tabs a.on .ic{background:var(--mint-soft)}
 .links{display:flex;gap:6px;flex-wrap:wrap}
 .dist{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
 .dist svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.chips.plans{margin-bottom:6px}
+.chips.plans button{font-size:12px;padding:7px 12px}
+.chips.plans button.on{background:var(--sky-soft);color:var(--sky-deep)}
 .chips.base{align-items:center;gap:6px}
 .chips.base .lbl{font-size:12px;color:var(--muted);flex:0 0 auto;padding-right:2px}
 .chips.base button{padding:6px 12px;font-size:12px}
@@ -201,6 +204,7 @@ textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-btn);padding
 
 <main>
   <section class="view" id="view-plan">
+    <div class="chips plans" id="planchips"></div>
     <div class="chips" id="daychips"></div>
     <div id="dayhead" class="dayhead"></div>
     <div id="stay"></div>
@@ -422,35 +426,103 @@ for (const [id,x] of Object.entries(EXTRA)) { const p = PLACES.find(q=>q.id===id
 const P = Object.fromEntries(PLACES.map(p=>[p.id,p]));
 /* 일차별 기준 숙소: 그날 밤 묵는 곳. 4일차는 체크아웃한 아미아나 기준 */
 const HOTEL_OF_DAY = ['panama','melia','amiana','amiana'];
-const DAYS = [
- {d:'11.26', w:'목', items:[
+// 일정 1~3안 (11/7). 1일차·마지막 공항 이동은 공통. 안 선택은 일정 탭 위 칩, localStorage 'plan'
+const DAY1 = {d:'11.26', w:'목', items:[
    {t:'19:30', w:'김해 출발'},
    {t:'22:40', w:'깜란 공항 도착', n:'픽업: 마이리얼트립 프라이빗 차량(4인승 1.6만원~, 입국장 정면 4번 기둥 미팅, 전날 09:00 전까지 취소 가능) 또는 그랩(약 30~40만동). 도깨비 카페 무료 픽업은 은방망이 등급 필요', p:'airport', nodist:true},
-   {t:'밤', w:'파나마 나트랑 호텔 체크인', n:'공항에서 시내 남쪽까지. 바우처 제시', p:'panama', from:'airport'},
- ]},
- {d:'11.27', w:'금', items:[
-   {t:'오전', w:'파나마 체크아웃 · 짐 보관', n:'해변·카페: 루남 비스트로·콩카페 등', free:true},
-   {t:'점심', w:'포한푹', p:'phohp', from:'panama'},
-   {t:'오후', w:'담시장 쇼핑 1.5시간', p:'dam', from:'panama'},
-   {t:'오후', w:'반미판에서 반미 포장', n:'소고기 치즈 반미 55,000동. 현금·QR만', p:'bmphan', from:'dam'},
-   {t:'오후', w:'CCCP 커피에서 반미 먹기', n:'외부 음식 반입 가능. 코코넛 커피와 같이', p:'cccp', from:'bmphan'},
-   {t:'저녁', w:'목식당', p:'moc', from:'cccp'},
-   {t:'밤', w:'멜리아 세레니티 깜란 이동 · 체크인', n:'시내에서 깜란 바이다이까지. 목식당에서 바로 택시/그랩', p:'melia', from:'moc'},
- ]},
- {d:'11.28', w:'토', items:[
-   {t:'오전', w:'리조트 휴양 · 체크아웃', n:'바이다이 해변. 올인클루시브면 조식·수영장 느긋하게', free:true},
-   {t:'점심', w:'안토이 2호점', p:'anthoi2', from:'melia'},
-   {t:'오후', w:'카페 → 아미아나 체크인', n:'안카페 · 레인포레스트 · CCCP 중 한 곳 들렀다 북쪽으로', free:true},
-   {t:'오후', w:'아미아나 리조트 체크인', n:'시내에서 북쪽 해안. 시내 셔틀 시간표 확인', p:'amiana', from:'anthoi2'},
-   {t:'저녁', w:'미정', n:'넴느엉 당반꾸옌 · 반미 퐁 · 세일링 클럽 불쇼 등. 반미 엇 트엉은 토요일 휴무. 리조트에서 시내까지 셔틀/택시 20분', free:true},
- ]},
- {d:'11.29', w:'일', items:[
-   {t:'오전', w:'아미아나 체크아웃 · 짐 보관', n:'리조트에 짐 맡기고 시내로(셔틀 또는 택시)'},
-   {t:'점심', w:'반미 엇 트엉', p:'bmut', from:'amiana'},
-   {t:'오후', w:'휴양·스파', n:'화이트 스파 앤 네일(10:00~22:00) · 카페 등', free:true},
-   {t:'저녁', w:'반미판', p:'bmphan', from:'bmut'},
-   {t:'20:00', w:'아미아나에서 짐 찾아 공항으로', n:'시내→아미아나 20분 + 아미아나→공항 약 1시간. 출발 3시간 전 도착 기준', p:'airport', from:'amiana'},
+   {t:'밤', w:'파나마 나트랑 호텔 체크인', n:'공항에서 시내 남쪽까지. 바우처 제시. 호텔 옆 BIDV ATM', p:'panama', from:'airport'},
+]};
+const LAST = [
+   {t:'19:00', w:'택시로 아미아나 → 짐 찾기', n:'시내에서 약 30분', p:'amiana', from:'bmphan'},
+   {t:'20:30', w:'아미아나에서 공항 출발', n:'약 1시간. 출발 2시간 전 도착. 리조트 차량은 111만동이라 그랩·사전예약 샌딩', p:'airport', from:'amiana'},
    {t:'23:40', w:'깜란 출발 → 11/30 06:20 김해'},
+];
+const AMI_MORNING = [
+   {t:'07:30', w:'조식 → 08:30 바구니배 → 라군 스노클링', n:'바구니배는 전날 등록(무료). 마스크 챙겨 가기, 구명조끼 무료. 아침이 물고기 많음'},
+   {t:'11:00', w:'체크아웃 · 짐 보관 → 셔틀로 시내', n:'무료 셔틀 11:00 리조트→나트랑센터(프런트 예약, 짐 없이) 또는 택시 30분'},
+];
+const PLANS = [
+ {name:'1안', sub:'동선 최소 · 휴양과 시내 반반', days:[ DAY1,
+  {d:'11.27', w:'금', items:[
+   {t:'08:30', w:'껌땀응온 아침', n:'쌀국수가 좋으면 바로 옆 포한푹(500m). 짐은 파나마에 맡기고 출발', p:'comtam', from:'panama'},
+   {t:'10:00', w:'담시장 쇼핑 1.5시간', n:'현금·흥정. BIDV 본점 ATM 300m', p:'dam', from:'comtam'},
+   {t:'12:00', w:'반미판에서 반미 포장', n:'소고기 치즈 반미 55,000동. 현금·QR만', p:'bmphan', from:'dam'},
+   {t:'12:20', w:'CCCP 커피에서 점심', n:'외부 음식 반입 가능. 코코넛 커피와 같이', p:'cccp', from:'bmphan'},
+   {t:'14:00', w:'제이 스파 90분', n:'20% 할인. 반미판에서 200m', p:'jspa', from:'cccp'},
+   {t:'16:00', w:'콩카페 · 해변 산책', p:'cong', from:'jspa'},
+   {t:'18:00', w:'목식당 저녁', n:'구글맵 채팅 예약, 2층 요청', p:'moc', from:'cong'},
+   {t:'20:00', w:'파나마에서 짐 찾아 멜리아 체크인', n:'목식당→파나마 도보 10분, 파나마에서 택시/그랩 40분', p:'melia', from:'panama'},
+  ]},
+  {d:'11.28', w:'토', items:[
+   {t:'오전', w:'조식 · 인피니티 풀 · 바이다이 해변', n:'아침 요가 등 데일리 액티비티 무료. 12:00 체크아웃'},
+   {t:'13:00', w:'안토이 2호점 점심', n:'예약 불가. 분짜 세트·소곱창 쌀국수', p:'anthoi2', from:'melia'},
+   {t:'14:00', w:'안카페 (또는 레인포레스트)', n:'코코넛 커피. 현금만', p:'an', from:'anthoi2'},
+   {t:'15:00', w:'아미아나 체크인 · 티 아워', n:'체크인하면서 내일 08:30 바구니배 등록(24시간 전). 티 아워 음료+디저트 무료', p:'amiana', from:'an'},
+   {t:'17:00', w:'라군 해변 일몰 · 카약', n:'카약·구명조끼 무료. 15:00 탁구도 무료'},
+   {t:'저녁', w:'리조트 안에서 저녁', n:'나가면 왕복 1시간. 오늘은 쉬는 날'},
+  ]},
+  {d:'11.29', w:'일', items:[ ...AMI_MORNING,
+   {t:'12:00', w:'반미 엇 트엉 점심', n:'일요일 영업', p:'bmut', from:'amiana'},
+   {t:'13:00', w:'마하미 스파 앤 네일', n:'마사지+네일 한 곳에서. 네일 안 하면 화이트 스파(900m)', p:'mahami', from:'bmut'},
+   {t:'15:30', w:'카메라온 포토부스', p:'cameraon', from:'mahami'},
+   {t:'16:00', w:'콩카페', p:'cong', from:'cameraon'},
+   {t:'17:30', w:'반미판 저녁', n:'현금·QR만', p:'bmphan', from:'cong'},
+   ...LAST ]},
+ ]},
+ {name:'2안', sub:'스파 몰빵 · 깜란 라군 스파까지', days:[ DAY1,
+  {d:'11.27', w:'금', items:[
+   {t:'08:00', w:'콩카페 아침', n:'짐은 파나마에 맡기고 출발', p:'cong', from:'panama'},
+   {t:'09:30', w:'담시장 쇼핑 1.5시간', n:'현금·흥정. BIDV 본점 ATM 300m', p:'dam', from:'cong'},
+   {t:'11:30', w:'엄마손 반미 점심', p:'nhon', from:'dam'},
+   {t:'13:00', w:'아만 스파 90분', n:'20% 할인', p:'aman', from:'nhon'},
+   {t:'15:00', w:'루남 비스트로 · 해변', p:'runam', from:'aman'},
+   {t:'18:00', w:'목식당 저녁', n:'구글맵 채팅 예약, 2층 요청', p:'moc', from:'runam'},
+   {t:'20:00', w:'파나마에서 짐 찾아 멜리아 체크인', n:'파나마에서 택시/그랩 40분', p:'melia', from:'panama'},
+  ]},
+  {d:'11.28', w:'토', items:[
+   {t:'오전', w:'조식 · 풀 · 해변', n:'09:30 체크아웃하고 짐은 벨데스크에'},
+   {t:'10:00', w:'라군 스파 깜란 90분', n:'10시 오픈 첫 손님. 아레나 리조트 상가. 리조트에서 택시', p:'lagoon', from:'melia'},
+   {t:'11:45', w:'짐 찾아 시내로', n:'라군 스파→멜리아→시내 약 40분'},
+   {t:'13:00', w:'안토이 2호점 점심', n:'예약 불가', p:'anthoi2', from:'melia'},
+   {t:'14:30', w:'척칩', p:'chuck', from:'anthoi2'},
+   {t:'15:30', w:'아미아나 체크인 · 티 아워', n:'내일 08:30 바구니배 등록. 라군 해변 일몰', p:'amiana', from:'chuck'},
+   {t:'저녁', w:'리조트 안에서 저녁'},
+  ]},
+  {d:'11.29', w:'일', items:[ ...AMI_MORNING,
+   {t:'12:00', w:'반미 엇 트엉 점심', p:'bmut', from:'amiana'},
+   {t:'13:00', w:'수 스파 2~3시간 코스', p:'su', from:'bmut'},
+   {t:'15:30', w:'롯데마트 기념품', n:'정찰제. 커피·캐슈넛·건망고', p:'lotte', from:'su'},
+   {t:'17:30', w:'반미판 저녁', n:'현금·QR만', p:'bmphan', from:'lotte'},
+   ...LAST ]},
+ ]},
+ {name:'3안', sub:'맛집·야경 위주', days:[ DAY1,
+  {d:'11.27', w:'금', items:[
+   {t:'08:00', w:'포한푹 쌀국수 아침', n:'짐은 파나마에 맡기고 출발', p:'phohp', from:'panama'},
+   {t:'09:30', w:'담시장 쇼핑 1.5시간', n:'현금·흥정. BIDV 본점 ATM 300m', p:'dam', from:'phohp'},
+   {t:'11:30', w:'반미 퐁 점심', n:'호이안식 해산물 반미', p:'bmphuong', from:'dam'},
+   {t:'13:00', w:'루남 비스트로', p:'runam', from:'bmphuong'},
+   {t:'14:30', w:'제이 스파 90분', n:'20% 할인', p:'jspa', from:'runam'},
+   {t:'16:30', w:'스카이라이트 루프탑 해질녘', p:'sky', from:'jspa'},
+   {t:'18:00', w:'목식당 저녁', n:'구글맵 채팅 예약, 2층 요청', p:'moc', from:'sky'},
+   {t:'20:00', w:'파나마에서 짐 찾아 멜리아 체크인', n:'파나마에서 택시/그랩 40분', p:'melia', from:'panama'},
+  ]},
+  {d:'11.28', w:'토', items:[
+   {t:'오전', w:'조식 · 풀 · 해변', n:'12:00 체크아웃'},
+   {t:'13:00', w:'안토이 2호점 점심', n:'예약 불가', p:'anthoi2', from:'melia'},
+   {t:'14:00', w:'탄 더 그리너리', p:'than', from:'anthoi2'},
+   {t:'15:00', w:'아미아나 체크인 · 티 아워 · 해변', n:'내일 08:30 바구니배 등록', p:'amiana', from:'than'},
+   {t:'19:00', w:'짜오마오 2호점 저녁', n:'인스타 DM(@chaomaoseafood.vn) 예약 필수', p:'chaomao2', from:'amiana'},
+   {t:'21:00', w:'세일링 클럽 불쇼', p:'sailing', from:'chaomao2'},
+   {t:'22:30', w:'택시로 아미아나', p:'amiana', from:'sailing'},
+  ]},
+  {d:'11.29', w:'일', items:[ ...AMI_MORNING,
+   {t:'12:00', w:'반미 엇 트엉 점심', p:'bmut', from:'amiana'},
+   {t:'13:00', w:'탐 스파 1호점 (또는 VIP 스파)', p:'tamspa', from:'bmut'},
+   {t:'15:00', w:'카메라온 포토부스', p:'cameraon', from:'tamspa'},
+   {t:'16:00', w:'엄마손 반미 골목 구경', p:'nhon', from:'cameraon'},
+   {t:'17:30', w:'라냐 가정식 저녁', n:'한국어 메뉴판, 카드 2% 추가. 반미판으로 바꿔도 거리 비슷', p:'lanha', from:'nhon'},
+   {t:'19:00', w:'택시로 아미아나 → 짐 찾기', n:'시내에서 약 30분', p:'amiana', from:'lanha'},
+   ...LAST.slice(1) ]},
  ]},
 ];
 
@@ -484,12 +556,15 @@ const pin = '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0
 const mapLink = p => `<a class="maplink" href="${p.url || mapUrl(p)}" target="_blank" rel="noopener">${pin}지도 열기</a>`;
 
 /* ---- plan ---- */
+let plan = ls.get('plan', 0); if (!(plan >= 0 && plan < PLANS.length)) plan = 0;
+let DAYS = PLANS[plan].days;
 let day = ls.get('day', null);
 if (day == null) {
   const today = new Date(); const m = today.getMonth()+1, dd = today.getDate();
   day = (today.getFullYear()===2026 && m===11 && dd>=26 && dd<=29) ? dd-26 : 0;
 }
 function renderPlan(){
+  document.getElementById('planchips').innerHTML = PLANS.map((pl,i)=>`<button class="${i===plan?'on':''}" data-pl="${i}">${pl.name} · ${pl.sub}</button>`).join('');
   document.getElementById('daychips').innerHTML = DAYS.map((d,i)=>`<button class="${i===day?'on':''}" data-i="${i}">${i+1}일차</button>`).join('');
   const D = DAYS[day];
   document.getElementById('dayhead').innerHTML = `<span class="d">${day+1}일차</span><span class="w">${D.d} ${D.w}요일</span>`;
@@ -512,6 +587,10 @@ function renderPlan(){
 document.getElementById('daychips').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   day = +b.dataset.i; ls.set('day', day); renderPlan();
+});
+document.getElementById('planchips').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  plan = +b.dataset.pl; ls.set('plan', plan); DAYS = PLANS[plan].days; renderPlan();
 });
 
 /* ---- stay: 바우처는 ① 빌드 시 내장(EMBED) ② 없으면 휴대폰에서 등록(IndexedDB) ---- */
