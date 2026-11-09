@@ -544,7 +544,10 @@ function distText(a,b){
 const dirUrl=(a,b)=>'https://www.google.com/maps/dir/?api=1&travelmode=driving&origin='+encodeURIComponent(a.vi+' '+a.addr)+'&destination='+encodeURIComponent(b.vi+' '+b.addr);
 const car='<svg viewBox="0 0 24 24"><path d="M5 17h14M6 11l1.5-4.5h9L18 11M4 11h16v6H4z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg>';
 const CATS = ['전체','맛집','카페','쇼핑','밤','휴양','숙소','ATM'];
-const DEFAULT_PACK = ['여권','항공권 e티켓','호텔 바우처','달러·현금 환전','신용카드','휴대폰 충전기·보조배터리','유심 또는 로밍','선크림','수영복','모자·선글라스','슬리퍼','상비약(지사제·소화제)','멀티탭','그랩(Grab) 앱 설치'];
+const OLD_DEFAULT_PACK = ['여권','항공권 e티켓','호텔 바우처','달러·현금 환전','신용카드','휴대폰 충전기·보조배터리','유심 또는 로밍','선크림','수영복','모자·선글라스','슬리퍼','상비약(지사제·소화제)','멀티탭','그랩(Grab) 앱 설치'];
+const DEFAULT_PACK = ['여권','항공권 e티켓','호텔 바우처','달러·현금 환전','신용카드','eSIM','충전기','보조배터리','이어폰','속옷','양말','모자','선글라스','수영복','슬리퍼','우산','칫솔','치약','클렌징','거울','화장품','리뉴','물티슈','선크림','상비약(지사제·소화제)','멀티탭','그랩(Grab) 앱 설치'];
+const PACK_V = 2;   // 기본 목록 바꾸면 올릴 것 → 폰에 저장된 목록도 새 기본으로 갈아탐(직접 추가한 항목·체크는 유지)
+const PACK_RENAME = {'유심 또는 로밍':['eSIM'], '휴대폰 충전기·보조배터리':['충전기','보조배터리'], '모자·선글라스':['모자','선글라스']};
 
 const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v==null? d : JSON.parse(v);}catch(e){return d;} },
@@ -784,6 +787,13 @@ if(!pack){
   WHO.forEach(w=>pack.ok[w]={});
 }
 WHO.forEach(w=>{ if(!pack.ok[w]) pack.ok[w]={}; });
+if(pack.v !== PACK_V){
+  // 새 기본 목록 + 사용자가 직접 추가했던 항목(예전 기본에 없던 것). 이름 바뀐 항목은 체크 상태 이어받음
+  const custom = pack.items.filter(t=>!OLD_DEFAULT_PACK.includes(t) && !DEFAULT_PACK.includes(t));
+  WHO.forEach(w=>{ Object.entries(PACK_RENAME).forEach(([o,ns])=>{ if(pack.ok[w][o]) ns.forEach(n=>pack.ok[w][n]=true); }); });
+  pack.items = DEFAULT_PACK.concat(custom); pack.v = PACK_V;
+  ls.set('pack2', pack);
+}
 function savePack(){ ls.set('pack2', pack); renderPack(); }
 function renderPack(){
   const mine = pack.ok[who];
